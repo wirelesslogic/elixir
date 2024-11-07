@@ -1,0 +1,58 @@
+{% macro display_text(value, props) %}
+  {% set class = props.style.settings.class|default('') %}
+  <span class="{{ class }}">
+    {% if props.data_type == 'text' %}
+      {{ (value or '')|truncate(30,end="...") }}
+    {% elif props.data_type == 'number' %}
+      {{ value }}
+    {% elif props.data_type == 'enum' %}
+      {{ value.name }}
+    {% else %}
+      {{ value }}
+    {% endif %}
+  </span>
+{% endmacro %}
+
+{% macro display_traffic(value, props) %}
+  {% set display_value = value.name if props.data_type == 'enum' else value %}
+  {% set class = props.style.settings.mapping.get(display_value|lower, {}).get('class', '') %}
+  <div class="flex items-center">
+    <div class="inline-block w-3 h-3 mr-2 bg-gray-500 rounded-full {{ class }}"></div>
+    {{ display_value.capitalize() }}
+  </div>
+{% endmacro %}
+
+{% macro display_bool(value, props) %}
+  {% set display_value = value %}
+  {% set class = props.style.settings.mapping.get(display_value|lower, {}).get('class', '') %}
+  <div class="flex items-center">
+    <div class="inline-block w-3 h-3 mr-2 bg-gray-500 rounded-full {{ class }}"></div>
+    {{ "Yes" if display_value else "No" }}
+  </div>
+{% endmacro %}
+
+{% macro display_icon(value, props) %}
+  {% set display_value = value.name if props.data_type == 'enum' else value %}
+  {% set class = props.style.settings.mapping.get(display_value|lower, {}).get('class', '') %}
+  {% set icon = props.style.settings.mapping.get(display_value|lower, {}).get('icon', '') %}
+  <div class="flex items-center justify-center">
+    <svg class="w-5 h-5 {{ class }}">
+      <use xlink:href="/static/img/icons.svg#{{ icon }}"></use>
+    </svg>
+  </div>
+{% endmacro %}
+
+{% macro table_column_content(value, props) %}
+  {% if props.style is defined %}
+    {% set render_methods = {
+    'text': display_text,
+    'traffic': display_traffic,
+    'bool': display_bool,
+    'icon': display_icon
+    } %}
+    {% set renderer = render_methods.get(props.style.type, None) %}
+    {{ renderer(value, props) if renderer else value }}
+  {% else %}
+    {{ value }}
+  {% endif %}
+{% endmacro %}

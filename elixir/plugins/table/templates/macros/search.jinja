@@ -1,0 +1,220 @@
+{% macro clear_icon(column, column_props, endpoint, table_name) %}
+  <div
+          hx-get="{{ url_for(endpoint, table_name=table_name, **{'search_' + column: ''}) }}"
+          hx-target="#table"
+          hx-trigger="click"
+          hx-swap="innerHTML"
+          hx-indicator="#loading"
+          class="cursor-pointer absolute inset-y-0 right-0 flex items-center pr-2.5"
+  >
+    <svg class="h-3 w-3 text-gray-300 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-600">
+      <use xlink:href="/static/img/icons.svg#cross"></use>
+    </svg>
+  </div>
+{% endmacro %}
+
+{% macro search_type_select(column, column_props, search, endpoint, table_name, focused=False) %}
+  <div class="relative">
+    <input type="text" name="search-{{ column }}" id="search-{{ column }}" value="{{ search.value|join(', ') }}" data-dropdown-toggle="search-dropdown-select-{{ column }}" data-dropdown-placement="bottom" class="cursor-pointer block w-full p-2 pr-7 text-gray-900 border border-gray-300 bg-white rounded-lg sm:text-xs focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 placeholder-shown:bg-gray-50 dark:placeholder-shown:bg-gray-700" placeholder=" " readonly />
+    {{ clear_icon(column, column_props, endpoint, table_name) }}
+  </div>
+  <!-- Dropdown menu for 'select' type -->
+  <div id="search-dropdown-select-{{ column }}" class="z-20 hidden w-60 bg-white rounded-lg shadow dark:bg-gray-700 dark:shadow-gray-900">
+    <form
+            id="search-dropdown-select-{{ column }}-form"
+            hx-get="{{ url_for(endpoint, table_name=table_name) }}"
+            hx-target="#table"
+            hx-swap="innerHTML"
+            hx-indicator="#loading"
+            class="table-form"
+    >
+      <ul class="max-h-48 px-2 py-2 overflow-y-auto text-sm text-gray-700 dark:text-gray-200" aria-labelledby="button-select-{{ column }}">
+        {% for option in column_props.options %}
+          <li>
+            <div class="flex items-center pl-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600">
+              <input id="checkbox-option-{{ column }}-{{ loop.index }}" name="search_{{ column }}" type="checkbox" value="{{ option }}" class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 dark:focus:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500" {% if option in search.value %}checked{% endif %} />
+              <label for="checkbox-option-{{ column }}-{{ loop.index }}" class="w-full py-2 ml-2 text-sm font-medium text-gray-900 rounded dark:text-gray-300">
+                {{ option }}
+              </label>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+      <div class="p-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-600">
+        <button type="submit" class="px-3 py-2 flex items-center text-white bg-primary-600 hover:bg-primary-500 hover:shadow-md hover:dark:shadow-md focus:ring-4 focus:outline-none focus:ring-primary-300 font-semibold rounded-lg text-sm text-center dark:focus:ring-primary-800">
+          <svg class="w-4 h-4 mr-1">
+            <use xlink:href="/static/img/icons.svg#filter"></use>
+          </svg>
+          Apply
+        </button>
+        <button
+                type="button"
+                hx-get="{{ url_for(endpoint, table_name=table_name, **{'search_' + column: ''}) }}"
+                hx-target="#table"
+                hx-swap="innerHTML"
+                hx-indicator="#loading"
+                class="px-3 py-2 flex items-center hover:bg-gray-100 dark:hover:bg-gray-600 text-sm font-medium text-gray-900 focus:outline-none rounded-lg hover:text-black focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:text-gray-400 dark:hover:text-white"
+        >
+          <svg class="w-4 h-4 mr-1">
+            <use xlink:href="/static/img/icons.svg#cross"></use>
+          </svg>
+          Clear
+        </button>
+      </div>
+    </form>
+  </div>
+{% endmacro %}
+
+{% macro search_type_text(column, column_props, search, endpoint, table_name, focused=False) %}
+  <div class="relative">
+      <label>
+          <input
+                  type="text"
+                  {{ "autofocus" if focused }}
+                  onfocus="setTimeout(()=>this.setSelectionRange(this.value.length, this.value.length), 0);"
+                  name="search_{{ column }}"
+                  value="{{ search.value }}"
+                  autocomplete="off"
+                  hx-get="{{ url_for(endpoint, table_name=table_name) }}"
+                  hx-target="#table"
+                  hx-trigger="keyup[keyCode==13], keyup delay:750ms"
+                  hx-swap="innerHTML"
+                  hx-indicator="#loading"
+                  placeholder=" "
+                  class="block w-full p-2 pr-7 text-gray-900 border border-gray-300 bg-white rounded-lg sm:text-xs focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 placeholder-shown:bg-gray-50 dark:placeholder-shown:bg-gray-700"
+          />
+      </label>
+      {{ clear_icon(column, column_props, endpoint, table_name) }}
+  </div>
+{% endmacro %}
+
+{% macro search_type_bulk(column, column_props, search, endpoint, table_name, focused=False) %}
+  <div class="relative">
+      <label>
+          <input
+                  type="text"
+                  {{ "autofocus" if focused }}
+                  onfocus="setTimeout(()=>this.setSelectionRange(this.value.length, this.value.length), 0);"
+                  name="search_{{ column }}"
+                  value="{{ search.value|join(', ') }}"
+                  autocomplete="off"
+                  hx-post="{{ url_for(endpoint, table_name=table_name) }}"
+                  hx-target="#table"
+                  hx-trigger="keyup[keyCode==13], keyup delay:750ms"
+                  hx-swap="innerHTML"
+                  hx-indicator="#loading"
+                  placeholder=" "
+                  class="block w-full p-2 pl-7 pr-7 text-gray-900 border border-gray-300 bg-white rounded-lg sm:text-xs focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 placeholder-shown:bg-gray-50 dark:placeholder-shown:bg-gray-700"
+          />
+      </label>
+      <div data-dropdown-toggle="search-dropdown-bulk-{{ column }}" data-dropdown-placement="bottom" data-dropdown-offset-skidding="166" class="cursor-pointer absolute inset-y-0 left-0 flex items-center pl-2.5">
+      <svg class="h-3 w-3 text-gray-300 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-600">
+        <use xlink:href="/static/img/icons.svg#bucket"></use>
+      </svg>
+    </div>
+    {{ clear_icon(column, column_props, endpoint, table_name) }}
+  </div>
+
+  <!-- Dropdown menu for 'bulk' type -->
+  <div id="search-dropdown-bulk-{{ column }}" class="z-20 hidden w-full max-w-sm bg-white rounded-lg shadow dark:bg-gray-700 dark:shadow-gray-900">
+    <form
+            hx-post="{{ url_for(endpoint, table_name=table_name) }}"
+            hx-target="#table"
+            hx-swap="innerHTML"
+            hx-indicator="#loading"
+    >
+      <div class="p-4">
+          <label>
+              <textarea
+                  name="search_{{ column }}"
+                  {{ "autofocus" if focused }}
+                  onfocus="setTimeout(()=>this.setSelectionRange(this.value.length, this.value.length), 0);"
+                  autocomplete="off"
+                  rows="3"
+                  class="block p-2.5 w-full resize-none h-48 text-gray-900 border border-gray-300 bg-white rounded-lg sm:text-xs focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 placeholder-shown:bg-gray-50 dark:placeholder-shown:bg-gray-700"
+                  placeholder="Bulk paste your {{ column |  replace('_', ' ') }} list here...">{{ search.value|join(', ') }}</textarea>
+          </label>
+      </div>
+      <div class="p-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-600">
+        <button type="submit" class="px-3 py-2 flex items-center text-white bg-primary-600 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm text-center dark:focus:ring-primary-800">
+          <svg class="w-4 h-4 mr-1">
+            <use xlink:href="/static/img/icons.svg#filter"></use>
+          </svg>
+          Apply
+        </button>
+        <button
+                type="button"
+                hx-get="{{ url_for(endpoint, table_name=table_name, **{'search_' + column: ''}) }}"
+                hx-target="#table"
+                hx-swap="innerHTML"
+                hx-indicator="#loading"
+                class="px-3 py-2 flex items-center hover:bg-gray-100 dark:hover:bg-gray-600 text-sm font-medium text-gray-900 focus:outline-none rounded-lg hover:text-black focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:text-gray-400 dark:hover:text-white"
+        >
+          <svg class="w-4 h-4 mr-1">
+            <use xlink:href="/static/img/icons.svg#cross"></use>
+          </svg>
+          Clear
+        </button>
+      </div>
+    </form>
+  </div>
+{% endmacro %}
+
+{% macro search_type_bool(column, column_props, search, endpoint, table_name, focused=False) %}
+    <div class="relative">
+        <label>
+            <select
+                id="countries"
+                name="search_{{ column }}"
+                hx-get="{{ url_for(endpoint, table_name=table_name) }}"
+                hx-target="#table"
+                hx-trigger="change"
+                hx-swap="innerHTML"
+                hx-indicator="#loading"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            >
+                <option {{ "selected" if search.value == "" else "" }} value="">Select</option>
+                <option {{ "selected" if search.value == True else "" }} value="true">Yes</option>
+                <option {{ "selected" if search.value == False else "" }} value="false">No</option>
+            </select>
+        </label>
+    </div>
+{% endmacro %}
+
+{% macro search_type_date(column, column_props, search, endpoint, table_name, focused=False) %}
+  <div class="relative">
+      <label>
+          <input
+                  type="text"
+                  {{ "autofocus" if focused }}
+                  onfocus="setTimeout(()=>this.setSelectionRange(this.value.length, this.value.length), 0);"
+                  name="search_{{ column }}"
+                  value="{{ search.value }}"
+                  autocomplete="off"
+                  hx-get="{{ url_for(endpoint, table_name=table_name) }}"
+                  hx-target="#table"
+                  hx-trigger="keyup[keyCode==13], keyup delay:750ms"
+                  hx-swap="innerHTML"
+                  hx-indicator="#loading"
+                  placeholder=" "
+                  class="block w-full p-2 pr-7 text-gray-900 border border-gray-300 bg-white rounded-lg sm:text-xs focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 placeholder-shown:bg-gray-50 dark:placeholder-shown:bg-gray-700"
+          />
+      </label>
+      {{ clear_icon(column, column_props, endpoint, table_name) }}
+  </div>
+{% endmacro %}
+
+{% macro table_search_field(column, column_props, schema_props, endpoint, table_name, focused=False) %}
+  {% set allowed_types = ['text', 'select', 'bulk', 'bool', 'date'] %}
+  {% set type_name = schema_props.type if schema_props.type in allowed_types else 'text' %}
+
+  {% set search_macros = {
+  'text': search_type_text,
+  'select': search_type_select,
+  'bulk': search_type_bulk,
+  'bool': search_type_bool,
+  'date': search_type_date,
+  } %}
+
+  {{ search_macros[type_name](column, column_props, schema_props, endpoint, table_name, focused) }}
+{% endmacro %}

@@ -1,0 +1,29 @@
+{% extends "layout.jinja" %}
+
+{% from "macros/toolbar.jinja" import table_toolbar %}
+{% from "macros/elements.jinja" import table_header, table_body, table_footer %}
+
+{% block section %}
+  <!-- Table -->
+  <section class="bg-gray-50 dark:bg-gray-900">
+    <div id="table" class="mx-auto max-w-screen-3xl">
+      <div class="relative bg-white shadow-md dark:bg-gray-800 sm:rounded-lg">
+        <!-- Table Toolbar -->
+        <div id="table-toolbar" class="bg-white dark:bg-gray-800 relative sm:rounded-lg">
+          {{ table_toolbar(table_state, table_name) }}
+        </div>
+        <!-- Table Content -->
+        <div id="table-content" class="overflow-x-auto">
+          <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+            <!-- Table Header -->
+            {{ table_header(table_state, table_name) }}
+            <!-- Table Body -->
+            {{ table_body(table_state, table_data, table_name) }}
+          </table>
+          <!-- Table Footer -->
+          {{ table_footer(table_state, table_name) }}
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock section %}

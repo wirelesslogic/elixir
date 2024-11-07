@@ -1,0 +1,8 @@
+table_actions:
+    export:
+        title: Export
+        icon: export
+    column_settings:
+        title: Settings
+        icon: table
+        endpoint_name: table.update_column_order

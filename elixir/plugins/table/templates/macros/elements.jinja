@@ -1,0 +1,335 @@
+{% from "macros/search.jinja" import table_search_field %}
+{% from "macros/column.jinja" import table_column_content %}
+
+{% macro table_header(state, table_name) %}
+  <thead
+          id="table-header"
+          class="text-xs text-gray-700 bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
+  >
+    <tr>
+      {# Select all checkbox #}
+      <th scope="col" class="p-4 py-3">
+        {% if state.selection_enabled %}
+          <div class="flex items-center">
+            {# Create variable to indentify if state of checkbox shoule be indeterminate #}
+            {% set any_overrides = ( state.selection.override | length ) > 0  %}
+            <input
+                    id="checkbox-all"
+                    {{ "checked" if state.selection.select_all == True }}
+                    data-indeterminate="{{ any_overrides | string | lower}}"
+                    hx-get="{{ url_for("table.update_selection", table_name=table_name, select_all=not state.selection.select_all) }}"
+                    hx-target="#table"
+                    hx-trigger="click"
+                    hx-swap="innerHTML"
+                    hx-indicator="#loading"
+                    type="checkbox"
+                    class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <label for="checkbox-all" class="sr-only">checkbox</label>
+          </div>
+        {% endif %}
+      </th>
+      {% if state.detail_page_enabled %}
+        <th>
+        </th>
+      {% endif %}
+      {# Render header columns #}
+      {% for column, props in state.columns.items() %}
+        {% if props.visible %}
+          {% set column_schema = state.schema[column] %}
+          <th scope="col" class="px-4 py-3 whitespace-nowrap">
+            <span class="uppercase">{{ column_schema.header }}</span>
+            {# Render sort button if 'sort' key exists #}
+            {% if 'sort' in props %}
+              {% set sort_icon, sort_dir =
+                ('sort-ascending', 'desc') if props.sort == 'asc' else
+                ('sort-descending', 'asc') if props.sort == 'desc' else
+                ('sort-unsorted', 'asc')
+              %}
+              <div
+                      hx-get="{{ url_for("table.update_sort", table_name=table_name, sort_by=column, sort_dir=sort_dir) }}"
+                      hx-target="#table"
+                      hx-trigger="click"
+                      hx-swap="innerHTML"
+                      hx-indicator="#loading"
+                      class="cursor-pointer inline-block"
+              >
+                <svg class="h-4 w-4 ml-1 inline-block {{ 'text-primary-500 dark:text-primary-600' if props.sort.direction != 'not' else 'text-gray-300 dark:text-gray-400' }}">
+                  <use xlink:href="/static/img/icons.svg#{{ sort_icon }}"></use>
+                </svg>
+              </div>
+            {% endif %}
+          </th>
+        {% endif %}
+      {% endfor %}
+    </tr>
+    <tr>
+      {# Select all checkbox empty column #}
+      <th scope="col" class="px-3.5 pb-2 whitespace-nowrap">
+        <div
+                hx-get="{{ url_for("table.reset_search", table_name=table_name) }}"
+                hx-target="#table"
+                hx-trigger="click"
+                hx-swap="innerHTML"
+                hx-indicator="#loading"
+                class="cursor-pointer inline-block text-gray-300 dark:text-gray-400 hover:text-primary-500 dark:hover:text-primary-600"
+        >
+          <svg class="w-5 h-5">
+            <use xlink:href="/static/img/icons.svg#clear-filter"></use>
+          </svg>
+        </div>
+      </th>
+      {% if state.detail_page_enabled %}
+        <th>
+        </th>
+      {% endif %}
+      {# Render header search input fields #}
+      {% for column, props in state.columns.items() %}
+        {% if props.visible %}
+          {% set column_schema = state.schema[column] %}
+          <th scope="col" class="px-4 pb-3">
+            {% if 'search' in props and 'search' in column_schema %}
+              {% set search_dict = dict(column_schema.search, value=props.search) %}
+              {{ table_search_field(
+                column,
+                props,
+                search_dict,
+                "table.update_search",
+                table_name,
+                (column == state.temp.input_autofocus)
+              ) }}
+            {% endif %}
+          </th>
+        {% endif %}
+      {% endfor %}
+    </tr>
+    <script>
+        (() => {
+            const checkbox_all = document.getElementById("checkbox-all");
+
+            checkbox_all.indeterminate = checkbox_all.dataset.indeterminate === 'true';
+        })()
+    </script>
+  </thead>
+{% endmacro %}
+
+{% macro table_body(state, table_data, table_name) %}
+  <tbody id="table-body" hx-target="this" hx-swap="outerHTML">
+    {% for row in table_data %}
+      <tr class="border-b dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700">
+        {# Single row checkbox #}
+        <td class="w-4 px-4 py-3">
+          {% if state.selection_enabled %}
+            <div class="flex items-center">
+              {# Determine selection state #}
+              {% set identifier = row[state.identifier_column] | string %}
+              {% set individual_selected = identifier in state.selection.override %}
+              {% set selected_individual = individual_selected != state.selection.select_all %}
+              {# bitwise xor (^) does not work in jinja, != has the same truth table for booleans though #}
+              <input
+                      id="checkbox-table-search-{{ loop.index }}"
+                      {{ "checked" if selected_individual == True }}
+                      value="{{ row[state.identifier_column] }}"
+                      hx-get="{{ url_for("table.update_selection", table_name=table_name, select=row[state.identifier_column]) }}"
+                      hx-target="#table"
+                      hx-trigger="click"
+                      hx-swap="innerHTML"
+                      hx-indicator="#loading"
+                      type="checkbox"
+                      class="checkbox-table-search w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              />
+              <label for="checkbox-table-search-{{ loop.index }}" class="sr-only">checkbox</label>
+            </div>
+          {% endif %}
+        </td>
+        {% if state.detail_page_enabled %}
+          <td class="w-4 px-0 py-0">
+            <a href="{{ url_for(state.detail_page_route, identifier=row[state.identifier_column]) }}">
+              <div class="px-3 py-3 cursor-pointer text-gray-300 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-primary-500 dark:hover:bg-primary-600">
+                <svg class="w-5 h-5">
+                  <use xlink:href="/static/img/icons.svg#{{ state.detail_page_button_icon }}"></use>
+                </svg>
+              </div>
+            </a>
+          </td>
+        {% endif %}
+        {# Render other row columns #}
+        {% for column, props in state.columns.items() %}
+          {% if props.visible %}
+            {% set column_schema = state.schema[column] %}
+            <td class="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+              {{ table_column_content(row[column], column_schema) }}
+            </td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+    {% endfor %}
+  </tbody>
+  <script>
+    (()=> {
+        const checkboxes = document.getElementsByClassName("checkbox-table-search");
+
+        for (let i = 0, l = checkboxes.length; i < l; ++i) {
+            checkboxes[i].addEventListener('click', event => {
+                event.stopPropagation();
+            })
+        }
+    })()
+  </script>
+{% endmacro %}
+
+{% macro table_footer(state, table_name) %}
+  <nav
+        id="table-footer"
+        class="flex flex-col items-start justify-between p-4 space-y-3 md:flex-row md:items-center md:space-y-0"
+  >
+    {% macro render_page_link(page_num) %}
+      {%- if page_num == state.pagination.current_page -%}
+        <span aria-current="page" class="z-10 flex items-center justify-center px-3 py-2 text-sm leading-tight border text-primary-600 bg-primary-50 border-gray-300 dark:border-primary-600 dark:bg-primary-600 dark:text-white">
+          {{ page_num }}
+        </span>
+      {%- else -%}
+        <div
+                hx-get="{{ url_for("table.change_page", table_name=table_name, page=page_num) }}"
+                hx-target="#table"
+                hx-trigger="click"
+                hx-swap="innerHTML show:#main:top"
+                hx-indicator="#loading"
+                class="cursor-pointer hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-white flex items-center justify-center px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400"
+        >
+          {{ page_num }}
+        </div>
+      {%- endif -%}
+    {% endmacro %}
+
+    <div class="flex items-center">
+      <button id="itemsperpage" data-dropdown-toggle="dropdown-itemspp" class="inline-flex items-center px-3 py-2 mb-3 mr-3 text-sm font-bold text-center text-white bg-primary-700 rounded-lg md:mb-0 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800" type="button">
+        <svg class="w-4 h-4 mr-1">
+          <use xlink:href="/static/img/icons.svg#items-per-page"></use>
+        </svg>
+        {{ state.pagination.items_per_page }}
+      </button>
+      <div id="dropdown-itemspp" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-16 dark:bg-gray-700">
+        <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="itemsperpage">
+          <li>
+            <span
+                    hx-get="{{ url_for("table.change_items_per_page", table_name=table_name,  items_per_page=500) }}"
+                    hx-target="#table"
+                    hx-trigger="click"
+                    hx-swap="innerHTML show:#main:top"
+                    hx-indicator="#loading"
+                    class="cursor-pointer block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+              500
+            </span>
+          </li>
+          <li>
+            <span
+                    hx-get="{{ url_for("table.change_items_per_page", table_name=table_name, items_per_page=200) }}"
+                    hx-target="#table"
+                    hx-trigger="click"
+                    hx-swap="innerHTML show:#main:top"
+                    hx-indicator="#loading"
+                    class="cursor-pointer block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+              200
+            </span>
+          </li>
+          <li>
+            <span
+                    hx-get="{{ url_for("table.change_items_per_page", table_name=table_name,  items_per_page=100) }}"
+                    hx-target="#table"
+                    hx-trigger="click"
+                    hx-swap="innerHTML show:#main:top"
+                    hx-indicator="#loading"
+                    class="cursor-pointer block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+              100
+            </span>
+          </li>
+          <li>
+            <span
+                    hx-get="{{ url_for("table.change_items_per_page", table_name=table_name,  items_per_page=50) }}"
+                    hx-target="#table"
+                    hx-trigger="click"
+                    hx-swap="innerHTML show:#main:top"
+                    hx-indicator="#loading"
+                    class="cursor-pointer block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+              50
+            </span>
+          </li>
+          <li>
+            <span
+                    hx-get="{{ url_for("table.change_items_per_page", table_name=table_name,  items_per_page=10) }}"
+                    hx-target="#table"
+                    hx-trigger="click"
+                    hx-swap="innerHTML show:#main:top"
+                    hx-indicator="#loading"
+                    class="cursor-pointer block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+              10
+            </span>
+          </li>
+        </ul>
+      </div>
+      <span class="text-sm font-normal text-gray-500 dark:text-gray-400">
+        Showing <span class="font-semibold text-gray-900 dark:text-white">{{ state.pagination.start }}</span> to
+        <span class="font-semibold text-gray-900 dark:text-white">{{ state.pagination.end }}</span> of
+        <span class="font-semibold text-gray-900 dark:text-white">{{ state.pagination.total_items }}</span> results.
+        {% if state.selection.enabled %}
+          <span class="font-semibold text-gray-900 dark:text-white">
+            {% if state.selection.select_all %}
+              {{ state.pagination.total_items - (state.selection.override | length) }}
+            {% else %}
+              {{ state.selection.override | length }}
+            {% endif %}
+          </span>
+          {{ "items are" if (state.selection.override | length) != 1 else "item is" }} selected.
+        {% endif %}
+      </span>
+    </div>
+
+    <ul class="inline-flex items-stretch -space-x-px">
+      {# Previous Button #}
+      <li>
+        <div
+                hx-get="{{ url_for("table.change_page", table_name=table_name, page=state.pagination.current_page - 1) }}"
+                hx-target="#table"
+                hx-trigger="click"
+                hx-swap="innerHTML show:#main:top"
+                hx-indicator="#loading"
+                class="{{ 'opacity-50 cursor-not-allowed' if state.pagination.current_page == 1 else 'cursor-pointer hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-white' }} flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-lg border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400"
+        >
+          <span class="sr-only">Previous</span>
+          <svg class="w-5 h-5">
+            <use xlink:href="/static/img/icons.svg#arrow-left"></use>
+          </svg>
+        </div>
+      </li>
+
+      {# Display pages #}
+      {% for page_num in range(1, state.pagination.total_pages + 1) %}
+        {%- if page_num < 4 or (page_num > state.pagination.current_page - 2 and page_num < state.pagination.current_page + 2) or page_num > state.pagination.total_pages - 3 %}
+          <li>{{ render_page_link(page_num) }}</li>
+        {% elif page_num == 4 or page_num == state.pagination.current_page + 2 %}
+          <li>
+            <span class="flex items-center justify-center px-3 py-2 text-sm leading-tight text-gray-500 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400">...</span>
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      {# Next Button #}
+      <li>
+        <div
+                hx-get="{{ url_for("table.change_page", table_name=table_name, page=state.pagination.current_page + 1) }}"
+                hx-target="#table"
+                hx-trigger="click"
+                hx-swap="innerHTML show:#main:top"
+                hx-indicator="#loading"
+                class="{{ 'opacity-50 cursor-not-allowed' if state.pagination.current_page == state.pagination.total_pages else 'cursor-pointer hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-white' }} flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400"
+        >
+          <span class="sr-only">Next</span>
+          <svg class="w-5 h-5">
+            <use xlink:href="/static/img/icons.svg#arrow-right"></use>
+          </svg>
+        </div>
+      </li>
+    </ul>
+  </nav>
+{% endmacro %}

@@ -1,0 +1,65 @@
+{% from "macros/buttons.jinja" import button_modal %}
+
+{% macro table_toolbar(state, table_name) %}
+  <div class="relative bg-white dark:bg-gray-800">
+    <div class="max-h-max md:max-h-[70px] flex flex-col items-center justify-between p-4 space-y-3 md:flex-row md:space-y-0 md:space-x-4">
+      <div class="w-full md:w-1/2">
+
+        {% if state.bulk_actions %}
+          {% if state.disable_bulk_actions == True %}
+            <button
+                id="table-actions-dropdown-button"
+                type="button"
+                class="cursor-not-allowed text-gray-400 bg-white font-medium border border-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:text-gray-500 dark:bg-gray-900 dark:border-gray-700"
+            >
+              {{ state.bulk_actions.button_name }}
+              <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+              </svg>
+            </button>
+          {% else %}
+            <button
+                id="table-actions-dropdown-button"
+                data-dropdown-toggle="table-actions-dropdown"
+                type="button"
+                class="text-gray-900 bg-white font-medium border border-gray-200 hover:bg-primary-600 hover:border-primary-400 hover:text-white focus:ring-0 focus:outline-none focus:bg-primary-600 focus:text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:text-gray-400 dark:bg-gray-800 dark:border-gray-600 dark:hover:border-primary-800 dark:hover:shadow-md dark:hover:bg-primary-600 dark:hover:text-white dark:focus:text-white dark:focus:bg-primary-600"
+            >
+              {{ state.bulk_actions.button_name }}
+              <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+              </svg>
+            </button>
+            <div id="table-actions-dropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+              <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
+                {% if state.bulk_actions.options %}
+                  {% for option_key, option_value in state.bulk_actions.options.items() %}
+                    <li>
+                      <span
+                          hx-get="{{ url_for(option_value.endpoint_name) }}"
+                          hx-target="#modal"
+                          class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">{{ option_value.title }}
+                      </span>
+                    </li>
+                  {% endfor %}
+                {% endif %}
+              </ul>
+            </div>
+          {% endif %}
+        {% endif %}
+
+      </div>
+      <div class="flex flex-col items-stretch justify-end flex-shrink-0 w-full space-y-2 md:w-auto md:flex-row md:space-y-0 md:items-center md:space-x-3">
+        {% if state.table_actions %}
+            {% for table_action_key, table_action_value in state.table_actions.items() %}
+                <div>{{ button_modal(table_name=table_name, **table_action_value) }}</div>
+            {% endfor %}
+        {% endif %}
+        {% if state.default_table_actions %}
+            {% for table_action_key, table_action_value in state.default_table_actions.items() %}
+                <div>{{ button_modal(table_name=table_name, **table_action_value) }}</div>
+            {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% endmacro %}

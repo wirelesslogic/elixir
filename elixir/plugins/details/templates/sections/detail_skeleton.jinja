@@ -1,0 +1,23 @@
+{% extends "layout.jinja" %}
+
+{% block section %}
+  <section class="bg-gray-50 dark:bg-gray-900">
+    {% if detail_menu.enabled %}
+        {% for item in detail_menu.items %}
+            <a href="{{ url_for(detail_route_info["full"], page=item, identifier=detail_id) }}">
+              <div class="px-3 py-3 cursor-pointer text-gray-300 dark:text-gray-400 hover:text-white dark:hover:text-white hover:bg-primary-500 dark:hover:bg-primary-600">
+                {{ item }}
+              </div>
+            </a>
+        {% endfor %}
+    {% endif %}
+  </section>
+
+  <section class="bg-gray-50 dark:bg-gray-900">
+    {% for item in detail_data %}
+        {% for field in detail_config.fields %}
+            {{ item[field] }}
+        {% endfor %}
+    {% endfor %}
+  </section>
+{% endblock section %}

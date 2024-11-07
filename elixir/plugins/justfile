@@ -1,0 +1,2 @@
+generate-docs:
+    SERVER=DEVELOPMENT pdoc --output-dir ./docs ../plugins --force

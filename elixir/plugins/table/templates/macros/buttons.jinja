@@ -1,0 +1,15 @@
+{% macro button_modal(endpoint_name="modals.modal", table_name="", icon="cupcake", title="NO TITLE") %}
+  <button
+    type="button"
+    class="w-full md:w-auto flex items-center justify-center py-2 px-3 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-200 hover:border-primary-400 hover:shadow-md hover:bg-primary-600 hover:text-white dark:hover:text-white focus:z-10 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:focus:ring-primary-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:shadow-md dark:hover:border-primary-800 dark:hover:bg-primary-600"
+    hx-get="{{ url_for(endpoint_name, table_name=table_name) }}"
+    hx-target="#modal"
+    hx-swap="innerHTML"
+    hx-indicator="#loading"
+  >
+    <svg class="mr-2 w-4 h-4">
+      <use xlink:href="/static/img/icons.svg#{{ icon }}"></use>
+    </svg>
+    {{ title }}
+  </button>
+{% endmacro %}

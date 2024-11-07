@@ -1,0 +1,5 @@
+generate-docs:
+    pdoc --output-dir ./docs ../core --force
+
+test:
+    python -m unittest discover -v -t ../ ./_tests/
