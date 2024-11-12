@@ -3,7 +3,7 @@ import secrets
 
 import pyotp
 import qrcode
-from config import cfg
+from elixir.core.config import cfg
 from qrcode.image.svg import SvgPathFillImage
 
 

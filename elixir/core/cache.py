@@ -1,7 +1,8 @@
 import msgpack
 from flask_caching import Cache
 
-from .logger import log
+from elixir.core.config import cfg
+from elixir.core.logger import log
 
 
 class ExtendedCacheMsgPack(Cache):
@@ -114,3 +115,6 @@ class ExtendedCacheMsgPack(Cache):
         """Invalidate a cache entry."""
         log.info(f"Invalidating {cache_key}")
         self.delete(cache_key)
+
+cache = ExtendedCacheMsgPack()
+cache.application = cfg.application

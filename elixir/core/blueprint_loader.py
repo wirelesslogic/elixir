@@ -3,12 +3,14 @@ import importlib
 from .logger import log
 
 
-def load_blueprint(flask_app, library, blueprint_key):
+def load_blueprint(flask_app, library, blueprint_key, is_elixir_library: bool = False):
     try:
-        log.debug(f'loading {library}')
+        used_library = library if not is_elixir_library else f"elixir.{library}"
 
-        library_init = importlib.import_module(library)
-        library_routes = importlib.import_module(f"{library}.routes")
+        log.debug(f'loading {used_library}')
+
+        library_init = importlib.import_module(used_library)
+        library_routes = importlib.import_module(f"{used_library}.routes")
 
         component_prefix = getattr(
             library_routes,

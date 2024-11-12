@@ -1,8 +1,8 @@
 import random
 
-from config import cfg
-from core import log
-from core.utils import is_valid_next_route
+from elixir.core.config import cfg
+from elixir.core.logger import log
+from elixir.core.utils import is_valid_next_route
 from flask import Blueprint, redirect, render_template, request, session, url_for
 
 from .forms import LoginForm

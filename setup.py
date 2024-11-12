@@ -11,7 +11,7 @@ setup(
     extras_require={
         'core': [
             'redis==5.0.1',
-            'apispec==6.7.1'
+            'apispec==6.7.1',
             'Flask==3.0.3',
             'Flask-WTF==1.2.1',
             'Flask-HTMX==0.4.0',

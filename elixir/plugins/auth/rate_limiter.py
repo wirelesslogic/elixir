@@ -1,9 +1,9 @@
 import hashlib
 import time
 
-from shared import cache
-from config import cfg
-from core import log
+from elixir.core.cache import cache
+from elixir.core.config import cfg
+from elixir.core.logger import log
 
 
 class RateLimiter:

@@ -1,6 +1,8 @@
 from flask import render_template, request
 from easydict import EasyDict
 
+from elixir.core.config import cfg
+
 
 class Layout:
     menu: EasyDict = EasyDict({})
@@ -49,3 +51,6 @@ class Layout:
             layout=self,
             **kwargs,
         )
+
+layout: Layout = Layout()
+layout.menu = cfg.menu

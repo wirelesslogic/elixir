@@ -1,6 +1,6 @@
-from core import log
-from core.auth import AuthenticationMethodHmac
-from config import cfg
+from elixir.core.logger import log
+from elixir.core.auth import AuthenticationMethodHmac
+from elixir.core.config import cfg
 
 from flask import (
     Blueprint,

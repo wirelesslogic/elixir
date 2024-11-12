@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 
-# from plugins.raven.models import Label
+# from elixir.plugins.raven.models import Label
 from wtforms import SelectMultipleField, StringField, SubmitField, TextAreaField
 from wtforms.validators import InputRequired
 

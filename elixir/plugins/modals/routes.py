@@ -11,13 +11,13 @@ from flask import (
     abort,
 )
 
-from shared import cache
-from config import cfg
-from core.decorators import htmx_view
-from core.htmx import htmx
-from core import log
+from elixir.core.cache import cache
+from elixir.core.config import cfg
+from elixir.core.decorators import htmx_view
+from elixir.core.htmx import htmx
+from elixir.core.logger import log
 
-from plugins.table import Table
+from elixir.plugins.table import Table
 
 from .forms import PlaceholderForm
 

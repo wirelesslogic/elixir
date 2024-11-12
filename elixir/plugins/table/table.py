@@ -16,15 +16,16 @@ from peewee import (
     SmallIntegerField,
 )
 
-from core.htmx import htmx
-from core import log
-from config import cfg
-from core.utils import string_to_list, true_false_empty
-from core.layout import Layout
+from elixir.core.htmx import htmx
+from elixir.core.logger import log
+from elixir.core.config import cfg
+from elixir.core.utils import string_to_list, true_false_empty
+from elixir.core.layout import Layout
+from elixir.core.cache import cache
 
-from db.custom_fields import EnumField
+from elixir.db.custom_fields import EnumField
 
-from shared import cache, models
+from elixir.plugins import models
 
 
 class Table:

@@ -2,13 +2,13 @@
 from datetime import datetime
 from functools import partial as call
 
-from config import cfg
+from elixir.core.config import cfg
 
-from db.custom_fields import JsonField, SecureField
-from db.base_models import WiLoModel, BaseModel
+from elixir.db.custom_fields import JsonField, SecureField
+from elixir.db.base_models import WiLoModel, BaseModel
 
-from core import log
-from core.utils import generate_id
+from elixir.core.logger import log
+from elixir.core.utils import generate_id
 from flask_login import UserMixin
 from peewee import BooleanField, CharField, DateField, ForeignKeyField
 from playhouse.hybrid import hybrid_property

@@ -1,7 +1,7 @@
 # app/plugins/auth/models.py
 from datetime import datetime
 
-from config import cfg
+from elixir.core.config import cfg
 from . import BaseModel, TABLE_PREFIX, SecureField
 
 from flask_login import UserMixin

@@ -8,7 +8,7 @@ import re
 import yaml
 from easydict import EasyDict
 
-from . import log
+from .logger import log
 
 
 # Constructor for including files
@@ -121,7 +121,7 @@ def load_config(
         server = os.environ.get("SERVER", "development").lower()
 
         # Get root directory
-        root_dir = path.dirname(path.dirname(path.abspath(__file__)))
+        root_dir = path.abspath(os.getcwd())
 
         # Determine if alternative config is used
         config_path = (
@@ -145,6 +145,12 @@ def load_config(
 
         # Load sub configs from components and plugins and merge with the main config
         for sub_dir in sub_configs:
+            if sub_dir == "plugins":
+                from elixir import plugins
+
+                config_dict = load_module_configs(path.dirname(path.abspath(plugins.__file__)), config_dict)
+                continue
+
             config_dict = load_module_configs(path.join(root_dir, sub_dir), config_dict)
     except Exception as e:
         print(
@@ -155,3 +161,19 @@ def load_config(
         config_dict = {}
 
     return EasyDict(**config_dict)
+
+class Config:
+    _config = None
+
+    def __init__(self, alternative_config_path=None, sub_configs=None):
+        self._alternative_config_path = alternative_config_path
+        self._sub_configs = sub_configs
+
+    @property
+    def cfg(self):
+        if self._config is None:
+            self._config = load_config(self._alternative_config_path, self._sub_configs)
+        return self._config
+
+config_instance = Config()
+cfg = config_instance.cfg

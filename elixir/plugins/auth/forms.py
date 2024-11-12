@@ -1,5 +1,5 @@
-from core.form import BaseForm
-from plugins.auth.fields import AuthenticationCodeField
+from elixir.core.form import BaseForm
+from elixir.plugins.auth.fields import AuthenticationCodeField
 from wtforms import BooleanField, PasswordField, StringField, SubmitField
 from wtforms.validators import Email, EqualTo, InputRequired, Length, Optional
 

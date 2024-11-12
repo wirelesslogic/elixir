@@ -1,10 +1,10 @@
 # app/plugins/raven/models.py
 from datetime import datetime
 
-from db.base_models import WiLoModel
-from db.custom_fields import EnumField, JsonField
+from elixir.db.base_models import WiLoModel
+from elixir.db.custom_fields import EnumField, JsonField
 
-from core.enums import CustomerStatus
+from elixir.core.enums import CustomerStatus
 from peewee import (
     CharField,
     DateTimeField,

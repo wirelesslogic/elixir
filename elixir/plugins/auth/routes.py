@@ -1,9 +1,9 @@
 import random
 
-from shared import cache
-from config import cfg
-from core import log
-from core.utils import is_valid_next_route
+from elixir.core.cache import cache
+from elixir.core.config import cfg
+from elixir.core.logger import log
+from elixir.core.utils import is_valid_next_route
 from flask import (
     Blueprint,
     current_app,
@@ -15,8 +15,8 @@ from flask import (
     url_for,
 )
 from flask_login import LoginManager, current_user, login_user, logout_user
-from plugins.auth.otp import OTPService
-from plugins.auth.rate_limiter import rate_limiter
+from elixir.plugins.auth.otp import OTPService
+from elixir.plugins.auth.rate_limiter import rate_limiter
 
 from .forms import LoginForm, OTPForm
 from .models import User

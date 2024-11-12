@@ -1,10 +1,10 @@
 import hashlib
 import unittest
 
-from config import cfg
-from core import log
+from elixir.core.config import cfg
+from elixir.core.logger import log
 
-from db import connect_to_db, main_db
+from elixir.db import connect_to_db, main_db
 
 secret_byte_array = bytearray()
 secret_byte_array.extend(map(ord, "secret"))

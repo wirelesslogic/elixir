@@ -2,10 +2,10 @@ import json
 from flask_htmx import make_response
 from flask import Blueprint, render_template, request, url_for, session
 
-from core.decorators import htmx_view
-from core.utils import string_to_list, true_false_empty
+from elixir.core.decorators import htmx_view
+from elixir.core.utils import string_to_list, true_false_empty
 
-from shared import layout
+from elixir.core.layout import layout
 
 from .forms import ColumnOrderForm
 from .table import Table

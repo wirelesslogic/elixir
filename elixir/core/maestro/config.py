@@ -1,6 +1,6 @@
 from redis.commands.search.field import TextField, NumericField
 
-from core.redis_imp import JsonIndexList
+from elixir.core.redis_imp import JsonIndexList
 
 
 seconds_in_day = 86400

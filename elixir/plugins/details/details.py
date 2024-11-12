@@ -3,12 +3,12 @@ from peewee import (
     ModelSelect,
 )
 
-from core.htmx import htmx
-from config import cfg
-from core.layout import Layout
-from core import log
+from elixir.core.htmx import htmx
+from elixir.core.config import cfg
+from elixir.core.layout import Layout
+from elixir.core.logger import log
 
-from shared import models
+from elixir.plugins import models
 
 
 class Details:
